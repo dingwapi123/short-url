@@ -1,6 +1,7 @@
 node_modules
 .idea
 src/logs/
+dist/
 # 所有 env 文件都忽略
 .env
 .env.*
