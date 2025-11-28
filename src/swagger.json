@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "默认模块",
+    "title": "URL Shortener",
     "description": "",
     "version": "1.0.0"
   },
@@ -22,11 +22,10 @@
                 "properties": {}
               },
               "example": {
-                "originURL": "https://sequelize.org/docs/v6/core-concepts/model-instances/#note-logging-instances"
+                "originURL": "https://github.com/13RTK"
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
@@ -37,7 +36,8 @@
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "origin url exists"
                     },
                     "data": {
                       "type": "object",
@@ -45,10 +45,10 @@
                         "id": {
                           "type": "string"
                         },
-                        "originalUrl": {
+                        "originURL": {
                           "type": "string"
                         },
-                        "shortUrl": {
+                        "shortURL": {
                           "type": "string"
                         },
                         "urlCode": {
@@ -63,12 +63,13 @@
                       },
                       "required": [
                         "id",
-                        "originalUrl",
-                        "shortUrl",
+                        "originURL",
+                        "shortURL",
                         "urlCode",
                         "createdAt",
                         "updatedAt"
-                      ]
+                      ],
+                      "description": "URL record object"
                     }
                   },
                   "required": [
@@ -77,7 +78,102 @@
                   ]
                 },
                 "example": {
-                  "message": "originalUrl is required"
+                  "message": "Origin URL already exists",
+                  "data": {
+                    "id": "1754062865870",
+                    "originURL": "https://react.dev/reference/rsc/server-components#async-components-with-server-components",
+                    "shortURL": "https://localhost:5432/rxQkAp",
+                    "urlCode": "rxQkAp",
+                    "createdAt": "2025-08-01T15:41:05.871Z",
+                    "updatedAt": "2025-08-01T15:41:05.871Z"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Successfully created"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "originURL": {
+                          "type": "string"
+                        },
+                        "shortURL": {
+                          "type": "string"
+                        },
+                        "urlCode": {
+                          "type": "string"
+                        },
+                        "updatedAt": {
+                          "type": "string"
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "originURL",
+                        "shortURL",
+                        "urlCode",
+                        "updatedAt",
+                        "createdAt"
+                      ],
+                      "description": "URL record object"
+                    }
+                  },
+                  "required": [
+                    "message",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "message": "URL record created successfully",
+                  "data": {
+                    "id": "1754475631461",
+                    "originURL": "https://github.com/13RTK",
+                    "shortURL": "https://localhost:5432/LMjRyk",
+                    "urlCode": "LMjRyk",
+                    "updatedAt": "2025-08-06T10:20:31.462Z",
+                    "createdAt": "2025-08-06T10:20:31.462Z"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "description": "Error message"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ]
+                },
+                "example": {
+                  "message": "URL code already exists"
                 }
               }
             },
@@ -89,7 +185,7 @@
     },
     "/{urlCode}": {
       "get": {
-        "summary": "Get redirect orginal Url",
+        "summary": "Get origin URL",
         "deprecated": false,
         "description": "",
         "tags": [],
@@ -97,8 +193,9 @@
           {
             "name": "urlCode",
             "in": "path",
-            "description": "",
+            "description": "The unique url code to identify short URL",
             "required": true,
+            "example": "rxQkAp",
             "schema": {
               "type": "string"
             }
@@ -113,10 +210,12 @@
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Response message"
                     },
                     "data": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "The origin URL"
                     }
                   },
                   "required": [
@@ -125,8 +224,8 @@
                   ]
                 },
                 "example": {
-                  "message": "success",
-                  "data": "https://sequelize.org/docs/v6/core-concepts/model-instances/#note-logging-instances"
+                  "message": "Success",
+                  "data": "https://react.dev/reference/rsc/server-components#async-components-with-server-components"
                 }
               }
             },
@@ -140,7 +239,8 @@
                   "type": "object",
                   "properties": {
                     "message": {
-                      "type": "string"
+                      "type": "string",
+                      "description": "Error message"
                     }
                   },
                   "required": [
@@ -148,7 +248,7 @@
                   ]
                 },
                 "example": {
-                  "message": "urlCode not found"
+                  "message": "URL code not found"
                 }
               }
             },
@@ -162,9 +262,13 @@
   "webhooks": {},
   "components": {
     "schemas": {},
-    "responses": {},
     "securitySchemes": {}
   },
-  "servers": [],
+  "servers": [
+    {
+      "url": "http://localhost:3000/v1",
+      "description": "开发环境"
+    }
+  ],
   "security": []
 }
