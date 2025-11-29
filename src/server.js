@@ -1,5 +1,5 @@
 import app from "./app.js"
-import URLRecord from "./models/url-record.js"
+import URLRecord from "./models/urlRecordModel"
 
 const port = 3000
 await URLRecord.sync({ force: true })
