@@ -20,6 +20,9 @@ export async function getOriginURL(req, res) {
     })
   }
 
+  // Increment visit count
+  await urlRecord.increment("visitCount")
+
   return res.status(200).json({
     message: "success",
     data: urlRecord.originalUrl,
