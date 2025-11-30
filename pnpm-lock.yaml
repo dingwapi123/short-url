@@ -23,9 +23,6 @@ importers:
       express-rate-limit:
         specifier: ^8.0.1
         version: 8.2.1(express@5.1.0)
-      nodemon:
-        specifier: ^3.1.11
-        version: 3.1.11
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -38,9 +35,6 @@ importers:
       pino-http:
         specifier: ^10.5.0
         version: 10.5.0
-      pino-pretty:
-        specifier: ^13.1.1
-        version: 13.1.2
       sequelize:
         specifier: ^6.37.7
         version: 6.37.7(pg-hstore@2.3.4)(pg@8.16.3)
@@ -50,6 +44,13 @@ importers:
       validator:
         specifier: ^13.15.23
         version: 13.15.23
+    devDependencies:
+      nodemon:
+        specifier: ^3.1.11
+        version: 3.1.11
+      pino-pretty:
+        specifier: ^13.1.1
+        version: 13.1.2
 
 packages:
 
