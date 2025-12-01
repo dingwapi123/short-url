@@ -1,91 +1,113 @@
 # Short URL 后端
 
-一个使用 Express + Sequelize 的后端服务，提供短链创建与解析。
+一个使用 TypeScript + Express + Drizzle ORM 构建的短链生成与解析服务。
+
+## 技术栈
+
+- **语言**: TypeScript
+- **框架**: Express
+- **数据库**: PostgreSQL
+- **ORM**: Drizzle ORM
+- **日志**: Pino
+- **API 文档**: Swagger
 
 ## 快速开始
 
-```sh
+1. **安装依赖**
+
+```bash
 pnpm install
-pnpm dev
 ```
 
-默认端口：`3000`
+2. **配置环境变量**
 
-Swagger 文档：`http://localhost:3000/v1/api-docs`
+复制 `.env.example` 为 `.env` 并填入数据库配置：
 
-## 环境变量
-
-在项目根目录（后端）创建 `.env`（已提供 `.env.example`），常用变量：
-
-```
+```env
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=postgres-short-url
 DB_USER=postgres
 DB_PASSWORD=你的密码
 
+# 或者使用连接字符串（推荐用于 Supabase 等云数据库）
+DATABASE_URL=postgresql://user:pass@host:port/db
+
 PROJECT_URL=http://localhost:5173
 SHORT_URL_LENGTH=6
-PORT=3000
 ```
 
-- `PROJECT_URL`：生成短链时的域名前缀。例如设为前端域名 `http://localhost:5173`，则后端返回短链为 `http://localhost:5173/{code}`。
-- `SHORT_URL_LENGTH`：短码长度。
-- `PORT`：后端服务端口（可选，默认 3000）。
+3. **数据库迁移**
 
-## API
-
-- 创建短链：`POST /v1/urlRecord`
-  - 请求体：`{ originalUrl: string, urlCode?: string }`
-  - 响应：`{ message: string, data?: { id, originalUrl, shortUrl, urlCode, createdAt, updatedAt } }`
-- 查询原始链接：`GET /v1/{urlCode}`
-  - 响应：`{ message: string, data?: string }`（当前返回 JSON）
-
-> 如需“点击短链即 302 跳转”，可将控制器改为 `res.redirect(originalUrl)`，并把 `PROJECT_URL` 设置为后端 `/v1` 路径。
-
-## 目录结构与关键代码
-
-- `src/server.js`：读取环境端口并启动服务
-- `src/app.js`：注册中间件与路由（`/v1`）
-- `src/controllers/urlRecordController.js`：创建短链（含输入清洗与校验）
-- `src/controllers/urlRedirectController.js`：按短码查询原始链接
-- `src/utils/urlHelper.js`：生成短链（基于 `PROJECT_URL` 与随机短码）
-- `src/utils/dbHelper.js`：数据库连接（PostgreSQL + Sequelize）
-- `src/utils/loggerHelper.js`：Pino 日志（写入 `./src/logs`）
-
-代码位置示例：
-
-- 创建短链入口：`src/controllers/urlRecordController.js:26`、`58`
-- 查询原始链接入口：`src/controllers/urlRedirectController.js:3`、`23`
-- 路由挂载：`src/app.js:24-25`
-- 短链生成：`src/utils/urlHelper.js:9`、`29`
-
-## 日志与忽略
-
-- 日志目录：`./src/logs`，已在后端 `.gitignore` 中忽略（使用 `src/logs/`）
-- 若日志已被跟踪，请取消跟踪：
-
-```sh
-git rm -r --cached short-url-backend/src/logs
-git commit -m "chore(backend): ignore src/logs and stop tracking logs"
+```bash
+pnpm db:generate # 生成迁移文件
+pnpm db:migrate  # 应用迁移到数据库
 ```
 
-## 其他特性
+4. **启动服务**
 
-- 限流：`express-rate-limit`（每分钟 15 次，`src/utils/rateLimiter.js`）
-- CORS：默认开启（`src/app.js`）
-- Swagger：`/v1/api-docs`（`src/swagger.json`）
+```bash
+pnpm dev   # 开发模式
+pnpm start # 生产模式
+```
+
+- 服务端口：`3000`
+- Swagger 文档：`http://localhost:3000/v1/api-docs`
+
+## API 接口
+
+### 1. 短链管理 (`/v1/urlRecord`)
+
+- **创建短链** (`POST /v1/urlRecord`)
+
+  - Body: `{ "originalUrl": "https://example.com", "urlCode": "custom-code" }`
+  - Response: `{ "message": "success", "data": { ... } }`
+
+- **获取所有短链** (`GET /v1/urlRecord`)
+
+  - Query: `page=1&pageSize=10`
+
+- **更新短链** (`PUT /v1/urlRecord/:id`)
+
+  - Body: `{ "title": "New Title", "urlCode": "new-code" }`
+
+- **删除短链** (`DELETE /v1/urlRecord/:id`)
+
+### 2. 短链跳转 (`/v1/:urlCode`)
+
+- **获取原始链接** (`GET /v1/:urlCode`)
+  - Response: `{ "message": "success", "data": "original_url" }`
+  - _注：此接口返回原始链接，前端获取后进行跳转。_
+
+## 项目结构
+
+```
+src/
+├── controllers/     # 业务逻辑控制器
+├── db/             # 数据库连接与 Schema 定义
+├── routes/         # 路由定义
+├── scripts/        # 工具脚本 (如 seed)
+├── utils/          # 通用工具函数
+├── app.ts          # Express 应用实例
+└── server.ts       # 服务入口
+drizzle/            # 数据库迁移文件
+```
 
 ## 开发命令
 
-```sh
-pnpm dev                 # 开发模式（dotenvx + nodemon）
-pnpm dev:database-connect# 仅测试数据库连接
-pnpm seed                # 运行数据脚本（若有）
+```bash
+pnpm dev          # 启动开发服务器 (tsx + watch)
+pnpm build        # 编译 TypeScript
+pnpm db:generate  # 生成 Drizzle 迁移文件
+pnpm db:migrate   # 执行数据库迁移
+pnpm seed         # 重置并填充初始数据
 ```
 
-## 部署建议
+## 部署
 
-- 使用生产级数据库与正确的环境变量
-- 若前端域名即对外短链域名，`PROJECT_URL` 设置为该前端地址
-- 若希望后端直接跳转，`PROJECT_URL` 设置为 `http(s)://后端域名/v1` 并将查询接口改为 302 重定向
+本项目支持部署到任何 Node.js 兼容平台（如 Render, Railway, Vercel 等）。
+
+1. 设置环境变量（参考 `.env.example`）。
+2. 构建项目：`pnpm build`。
+3. 启动服务：`pnpm start`。
+4. **注意**：连接 Supabase 等云数据库时，代码会自动启用 SSL (`rejectUnauthorized: false`)。
